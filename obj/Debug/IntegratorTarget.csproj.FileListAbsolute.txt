@@ -1,0 +1,13 @@
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\obj\Debug\IntegratorTarget.csprojResolveAssemblyReference.cache
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\obj\Debug\IntegratorTarget.csproj.CoreCompileInputs.cache
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\NLog.config
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\IntegratorTarget.exe.config
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\IntegratorTarget.exe
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\IntegratorTarget.pdb
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\Newtonsoft.Json.dll
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\NLog.dll
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\Newtonsoft.Json.xml
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\bin\Debug\NLog.xml
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\obj\Debug\IntegratorTarget.csproj.CopyComplete
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\obj\Debug\IntegratorTarget.exe
+C:\Users\erent\source\repos\MarketPlaceIntegrationEngineV2\IntegratorTarget\obj\Debug\IntegratorTarget.pdb
