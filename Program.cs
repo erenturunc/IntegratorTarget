@@ -28,14 +28,15 @@ namespace IntegratorTarget
 
             Dictionary<long, Product> SourceProductList = ProductDataProvider.GetProducts(Config.MemberID, Config.ProviderID);
             Dictionary<string, string> ParentSKUs = SourceProductList.Where(p => !string.IsNullOrWhiteSpace(p.Value.ProductGroupSKU)).Select(p => p.Value.ProductGroupSKU).Distinct().ToDictionary(a => a, b => b);
-            Dictionary<string, Product> ParentProductList = SourceProductList.Where(p => ParentSKUs.ContainsKey(p.Value.SKU)).ToDictionary(a => a.Value.SKU, b => b.Value);
-            Dictionary<string, string> MappingColor = AppDataProvider.Get_Mapping(Config.MemberID, Config.ProviderID, Config.TargetID, MappingType.Color);
-            Dictionary<string, string> MappingSize = AppDataProvider.Get_Mapping(Config.MemberID, Config.ProviderID, Config.TargetID, MappingType.Size);
-
-            if (MappingColor.Count > 0)
-                AttributeMapping.MapColor(SourceProductList, MappingColor);
-            if(MappingSize.Count > 0)
-                AttributeMapping.MapSize(SourceProductList, MappingSize);
+            Dictionary<string, Product> ParentProductList = SourceProductList.Where(p => ParentSKUs.ContainsKey(p.Value.SKU)).GroupBy(p => p.Value.SKU).ToDictionary(a => a.Key, b => b.First().Value);
+            Dictionary<MappingType, Dictionary<string, string>> MappingTarget = AppDataProvider.Get_Mapping(Config.MemberID, Config.ProviderID, Config.TargetID);
+            
+            if (MappingTarget.ContainsKey(MappingType.Attribute02))
+                AttributeMapping.MapAttribute02(SourceProductList, MappingTarget[MappingType.Attribute02]);
+            if (MappingTarget.ContainsKey(MappingType.Attribute04))
+                AttributeMapping.MapAttribute04(SourceProductList, MappingTarget[MappingType.Attribute04]);
+            if (MappingTarget.ContainsKey(MappingType.Attribute06))
+                AttributeMapping.MapAttribute06(SourceProductList, MappingTarget[MappingType.Attribute06]);
 
             AttributeMapping.MapPrice(SourceProductList, Config.PriceFormula);
 
@@ -44,7 +45,12 @@ namespace IntegratorTarget
                 SourceProductList = Souq.Validation(SourceProductList);
 
                 Souq.Output(SourceProductList, ParentProductList);
-                
+            }
+            else if (Target == "myreyon")
+            {
+                SourceProductList = Myreyon.Validation(SourceProductList);
+
+                Myreyon.Output(SourceProductList, ParentProductList);
             }
 
         }

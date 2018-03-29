@@ -6,3 +6,7 @@
 *.pdb
 *.csproj
 *.sln
+*.config
+*.cache
+*.txt
+*.pdb

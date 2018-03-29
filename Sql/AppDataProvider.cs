@@ -55,27 +55,15 @@ namespace IntegratorTarget.Sql
             return Result;
         }
 
-        public static Dictionary<string, string> Get_Mapping(int MemberID, int ProviderID, int TargetID, MappingType Type)
+        public static Dictionary<MappingType, Dictionary<string, string>> Get_Mapping(int MemberID, int ProviderID, int TargetID)
         {
-            Dictionary<string, string> Result = new Dictionary<string, string>();
+            Dictionary<MappingType, Dictionary<string, string>> Result = new Dictionary<MappingType, Dictionary<string, string>>();
             string ConnectionString = ConfigurationManager.ConnectionStrings["ApplicationServices"].ConnectionString;
             SqlConnection conn;
             SqlCommand cmd;
             SqlDataReader reader;
-            string query;
-            switch (Type)
-            {
-                case MappingType.Size:
-                    query = "Global_Get_Mapping_Size";
-                    break;
-                case MappingType.Color:
-                    query = "Global_Get_Mapping_Color";
-                    break;
-                default:
-                    throw new Exception(string.Format("Mapping type is not implemented::{0}", Type.ToString()));
-            }
+            string query = "Global_Get_Mapping";
             
-
             conn = new SqlConnection(ConnectionString);
             try
             {
@@ -91,10 +79,21 @@ namespace IntegratorTarget.Sql
                 reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
+                    MappingType attribute = (MappingType)Enum.Parse(typeof(MappingType), ((string)reader["Attribute"]));
                     string key = ((string)reader["SourceValue"]);
                     string value = ((string)reader["TargetValue"]);
-                    if (!Result.ContainsKey(key))
-                        Result.Add(key, value);
+                    Dictionary<string, string> MapDic;
+                    if (!Result.ContainsKey(attribute))
+                    {
+                        MapDic = new Dictionary<string, string>();
+                        Result.Add(attribute, MapDic);
+                    }
+                    else
+                        MapDic = Result[attribute];
+
+
+                    if (!MapDic.ContainsKey(key))
+                        MapDic.Add(key, value);
                 }
                 reader.Close();
 

@@ -37,6 +37,10 @@ namespace IntegratorTarget.Sql
                     Product p = new Product();
                     foreach (var attr in p.GetType().GetFields())
                     {
+                        //Skip non-attribute fields
+                        if (attr.Name == "SubProducts")
+                            continue;
+
                         if (reader[attr.Name] == DBNull.Value)
                             attr.SetValue(p, null);
                         else

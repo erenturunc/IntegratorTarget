@@ -46,8 +46,9 @@ namespace IntegratorTarget
 
     public enum MappingType
     {
-        Size,
-        Color
+        Attribute02,
+        Attribute04,
+        Attribute06
     }
 
     [Serializable]
@@ -101,6 +102,8 @@ namespace IntegratorTarget
         public string ImageURL08;
         public string ImageURL09;
         public string ImageURL10;
+
+        public List<Product> SubProducts = new List<Product>();
     }
 
     public class Category
