@@ -23,9 +23,9 @@ namespace IntegratorTarget.DataTarget
             return sourceProducts;
         }
 
-        internal static void Output(Dictionary<long, Product> sourceProductList, Dictionary<string,Product> parentProductList)
+        internal static string Output(Dictionary<long, Product> sourceProductList, Dictionary<string,Product> parentProductList)
         {
-            StreamWriter sw = new StreamWriter("Souq.csv");
+            string Result = string.Empty;
 
             foreach (var item in sourceProductList)
             {
@@ -63,10 +63,11 @@ namespace IntegratorTarget.DataTarget
                 line += item.Value.ImageURL04 + ";"; // Images
                 line += item.Value.ImageURL05 + ";"; // Images
                 line += item.Value.ImageURL06 + ";"; // Images
-                sw.WriteLine(line);
+                Result += line + "\r\n";
             }
 
-            sw.Close();
+            return Result;
+
         }
     }
 }

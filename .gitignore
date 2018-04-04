@@ -10,3 +10,8 @@
 *.cache
 *.txt
 *.pdb
+*.xml
+*.csv
+*.cache
+*.user
+*.CopyComplete

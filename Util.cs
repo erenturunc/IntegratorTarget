@@ -124,5 +124,18 @@ namespace IntegratorTarget
 
             return dt;
         }
+
+        internal static void WriteOutputFile(string member, string provider, string target, string fileFormat, string content)
+        {
+            string folder = string.Format("Output/{0}/{1}/{2}", member, provider, target);
+            string fileName = string.Format("{0}/{1}_{2}_{3}_{4}{5}", folder, member, provider, target, DateTime.Now.ToString("yyyyMMddHHmmss"), fileFormat);
+
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            StreamWriter writer = new StreamWriter(fileName, false, Encoding.GetEncoding("iso-8859-9"));
+            writer.Write(content);
+            writer.Close();
+        }
     }
 }

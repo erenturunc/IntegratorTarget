@@ -46,6 +46,8 @@ namespace IntegratorTarget
 
     public enum MappingType
     {
+        ProductName,
+        Category,
         Attribute02,
         Attribute04,
         Attribute06
@@ -103,7 +105,67 @@ namespace IntegratorTarget
         public string ImageURL09;
         public string ImageURL10;
 
-        public List<Product> SubProducts = new List<Product>();
+        public List<SubProduct> SubProducts = new List<SubProduct>();
+    }
+
+    [Serializable]
+    public class SubProduct : Product
+    {
+        public SubProduct()
+        {
+        }
+
+        public SubProduct(Product p)
+        {
+            this.Attribute01 = p.Attribute01;
+            this.Attribute02 = p.Attribute02;
+            this.Attribute03 = p.Attribute03;
+            this.Attribute04 = p.Attribute04;
+            this.Attribute05 = p.Attribute05;
+            this.Attribute06 = p.Attribute06;
+            this.Attribute07 = p.Attribute07;
+            this.Attribute08 = p.Attribute08;
+            this.Attribute09 = p.Attribute09;
+            this.Attribute10 = p.Attribute10;
+            this.Attribute11 = p.Attribute11;
+            this.Attribute12 = p.Attribute12;
+            this.Attribute13 = p.Attribute13;
+            this.Attribute14 = p.Attribute14;
+            this.Attribute15 = p.Attribute15;
+            this.Attribute16 = p.Attribute16;
+            this.Attribute17 = p.Attribute17;
+            this.Attribute18 = p.Attribute18;
+            this.Attribute19 = p.Attribute19;
+            this.Attribute20 = p.Attribute20;
+            this.Brand = p.Brand;
+            this.Category = p.Category;
+            this.Condition = p.Condition;
+            this.DeliveryTime = p.DeliveryTime;
+            this.Description = p.Description;
+            this.FreeShipping = p.FreeShipping;
+            this.GlobalBarcode = p.GlobalBarcode;
+            this.ImageURL01 = p.ImageURL01;
+            this.ImageURL02 = p.ImageURL02;
+            this.ImageURL03 = p.ImageURL03;
+            this.ImageURL04 = p.ImageURL04;
+            this.ImageURL05 = p.ImageURL05;
+            this.ImageURL06 = p.ImageURL06;
+            this.ImageURL07 = p.ImageURL07;
+            this.ImageURL08 = p.ImageURL08;
+            this.ImageURL09 = p.ImageURL09;
+            this.ImageURL10 = p.ImageURL10;
+            this.MemberID = p.MemberID;
+            this.OfferNote = p.OfferNote;
+            this.Price = p.Price;
+            this.ProductGroupSKU = p.ProductGroupSKU;
+            this.ProductID = p.ProductID;
+            this.ProductName = p.ProductName;
+            this.ProviderID = p.ProviderID;
+            this.Quantity = p.Quantity;
+            this.SellingPrice = p.SellingPrice;
+            this.ShippingProviders = p.ShippingProviders;
+            this.SKU = p.SKU;
+        }
     }
 
     public class Category

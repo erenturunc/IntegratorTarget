@@ -37,6 +37,10 @@ namespace IntegratorTarget
                 AttributeMapping.MapAttribute04(SourceProductList, MappingTarget[MappingType.Attribute04]);
             if (MappingTarget.ContainsKey(MappingType.Attribute06))
                 AttributeMapping.MapAttribute06(SourceProductList, MappingTarget[MappingType.Attribute06]);
+            if (MappingTarget.ContainsKey(MappingType.ProductName))
+                AttributeMapping.MapProductName(SourceProductList, MappingTarget[MappingType.ProductName]);
+            if (MappingTarget.ContainsKey(MappingType.Category))
+                AttributeMapping.MapCategory(SourceProductList, MappingTarget[MappingType.Category]);
 
             AttributeMapping.MapPrice(SourceProductList, Config.PriceFormula);
 
@@ -44,13 +48,15 @@ namespace IntegratorTarget
             {
                 SourceProductList = Souq.Validation(SourceProductList);
 
-                Souq.Output(SourceProductList, ParentProductList);
+                string Output = Souq.Output(SourceProductList, ParentProductList);
+                Util.WriteOutputFile(Member, Provider, Target, ".csv", Output);
             }
             else if (Target == "myreyon")
             {
                 SourceProductList = Myreyon.Validation(SourceProductList);
 
-                Myreyon.Output(SourceProductList, ParentProductList);
+                string Output = Myreyon.Output(SourceProductList, ParentProductList);
+                Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
             }
 
         }

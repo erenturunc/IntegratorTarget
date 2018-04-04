@@ -40,9 +40,6 @@ namespace IntegratorTarget.DataMapping
 
             foreach (var item in sourceProductList)
             {
-                if (string.IsNullOrWhiteSpace(item.Value.Attribute06))
-                    continue;
-
                 if (SearchType == "Wildcard")
                 {
                     foreach (var map in mappingAttribute06)
@@ -55,13 +52,68 @@ namespace IntegratorTarget.DataMapping
                 }
                 else if (SearchType == "Direct")
                 {
-                    if (mappingAttribute06.ContainsKey(item.Value.Attribute02))
+                    if (mappingAttribute06.ContainsKey(item.Value.Attribute06))
                         item.Value.Attribute06 = mappingAttribute06[item.Value.Attribute06];
                 }
             }
 
 
         }
+
+        internal static void MapProductName(Dictionary<long, Product> sourceProductList, Dictionary<string, string> mappingProductName)
+        {
+            string SearchType = "Direct";
+            if (mappingProductName.Keys.Where(a => a.Contains("*")).Count() > 0)
+                SearchType = "Wildcard";
+
+            foreach (var item in sourceProductList)
+            {
+                if (SearchType == "Wildcard")
+                {
+                    foreach (var map in mappingProductName)
+                    {
+                        string regexPattern = "^" + Regex.Escape(map.Key).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+                        if (Regex.IsMatch(map.Key, regexPattern))
+                            item.Value.ProductName = map.Value;
+                    }
+
+                }
+                else if (SearchType == "Direct")
+                {
+                    if (mappingProductName.ContainsKey(item.Value.ProductName))
+                        item.Value.ProductName = mappingProductName[item.Value.ProductName];
+                }
+            }
+
+
+        }
+
+        internal static void MapCategory(Dictionary<long, Product> sourceProductList, Dictionary<string, string> mappingCategory)
+        {
+            string SearchType = "Direct";
+            if (mappingCategory.Keys.Where(a => a.Contains("*")).Count() > 0)
+                SearchType = "Wildcard";
+
+            foreach (var item in sourceProductList)
+            {
+                if (SearchType == "Wildcard")
+                {
+                    foreach (var map in mappingCategory)
+                    {
+                        string regexPattern = "^" + Regex.Escape(map.Key).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+                        if (Regex.IsMatch(map.Key, regexPattern))
+                            item.Value.Category = map.Value;
+                    }
+
+                }
+                else if (SearchType == "Direct")
+                {
+                    if (!string.IsNullOrEmpty(item.Value.Category) && mappingCategory.ContainsKey(item.Value.Category))
+                        item.Value.Category = mappingCategory[item.Value.Category];
+                }
+            }
+        }
+
 
         internal static void MapPrice(Dictionary<long, Product> sourceProductList, string priceFormula)
         {

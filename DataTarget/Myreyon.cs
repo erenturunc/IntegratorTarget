@@ -25,13 +25,15 @@ namespace IntegratorTarget.DataTarget
             return sourceProducts;
         }
 
-        internal static void Output(Dictionary<long, Product> sourceProductList, Dictionary<string, Product> parentProductList)
+        internal static string Output(Dictionary<long, Product> sourceProductList, Dictionary<string, Product> parentProductList)
         {
             foreach (var item in sourceProductList)
             {
                 if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
-                    parentProductList[item.Value.ProductGroupSKU].SubProducts.Add(item.Value);
+                    parentProductList[item.Value.ProductGroupSKU].SubProducts.Add(new SubProduct(item.Value));
             }
+
+            parentProductList = parentProductList.Where(x => x.Value.SubProducts.Count > 0).ToDictionary(a => a.Key, b => b.Value);
 
 
             XmlSerializer xsSubmit = new XmlSerializer(typeof(List<Product>));
@@ -39,12 +41,21 @@ namespace IntegratorTarget.DataTarget
 
             using (var sww = new StringWriter())
             {
-                using (XmlWriter writer = XmlWriter.Create(sww))
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.IndentChars = "     "; // note: default is two spaces
+                settings.NewLineOnAttributes = false;
+                settings.OmitXmlDeclaration = true;
+
+                using (XmlWriter writer = XmlWriter.Create(sww, settings))
                 {
                     xsSubmit.Serialize(writer, parentProductList.Values.ToList());
                     xml = sww.ToString(); // Your XML
+                    xml = "<?xml version=\"1.0\" encoding=\"iso-8859-9\" ?>\r\n" + xml;
                 }
             }
+
+            return xml;
 
         }
     }
