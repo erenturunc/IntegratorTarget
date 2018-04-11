@@ -137,5 +137,21 @@ namespace IntegratorTarget
             writer.Write(content);
             writer.Close();
         }
+
+
+        public static string GetHashSha256(string Message, string ApiKey)
+        {
+            var shaKeyBytes = System.Text.Encoding.UTF8.GetBytes(ApiKey);
+            string signatureHashHex;
+            using (var shaAlgorithm = new System.Security.Cryptography.HMACSHA256(shaKeyBytes))
+            {
+                var signatureBytes = System.Text.Encoding.UTF8.GetBytes(Message);
+                var signatureHashBytes = shaAlgorithm.ComputeHash(signatureBytes);
+                signatureHashHex = string.Concat(Array.ConvertAll(signatureHashBytes, b => b.ToString("X2"))).ToLower();
+
+            }
+
+            return signatureHashHex;
+        }
     }
 }
