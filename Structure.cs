@@ -18,6 +18,8 @@ namespace IntegratorTarget
         public static string PriceFormula;
         public static string ProviderPrefix;
         public static string DataOutputFolder;
+        public static string TargetApiKey;
+        public static string TargetApiUsername;
         public static CurrencyRates Rates;
         public static Encoding DataSourceEncoding = Encoding.UTF8;
 
@@ -43,6 +45,10 @@ namespace IntegratorTarget
                 ProviderPrefix = ConfigKeyValues["providerprefix"];
             if (ConfigKeyValues.ContainsKey("dataoutputfolder"))
                 DataOutputFolder = ConfigKeyValues["dataoutputfolder"];
+            if (ConfigKeyValues.ContainsKey("targetapikey"))
+                TargetApiKey = ConfigKeyValues["targetapikey"];
+            if (ConfigKeyValues.ContainsKey("targetapiusername"))
+                TargetApiUsername = ConfigKeyValues["targetapiusername"];
             if (ConfigKeyValues.ContainsKey("datasourceencoding"))
                 DataSourceEncoding = Encoding.GetEncoding(ConfigKeyValues["datasourceencoding"]);
 

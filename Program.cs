@@ -44,6 +44,15 @@ namespace IntegratorTarget
 
             AttributeMapping.MapPrice(SourceProductList, Config.PriceFormula);
 
+            //Add Provider Prefix to SKUs
+            foreach (var item in SourceProductList)
+            {
+                item.Value.SKU = Config.ProviderPrefix + item.Value.SKU;
+                if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
+                    item.Value.ProductGroupSKU = Config.ProviderPrefix + item.Value.ProductGroupSKU;
+            }
+
+
             if (Target == "souq")
             {
                 SourceProductList = Souq.Validation(SourceProductList);
@@ -54,8 +63,16 @@ namespace IntegratorTarget
             else if (Target == "myreyon")
             {
                 SourceProductList = Myreyon.Validation(SourceProductList);
-
+                
                 string Output = Myreyon.Output(SourceProductList, ParentProductList);
+                Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
+            }
+            else if (Target == "bamilo")
+            {
+                var p = SourceProductList[20992];
+                SourceProductList = Bamilo.Validation(SourceProductList);
+                
+                string Output = Bamilo.Output(SourceProductList, ParentProductList);
                 Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
             }
 
