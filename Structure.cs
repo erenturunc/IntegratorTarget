@@ -17,7 +17,9 @@ namespace IntegratorTarget
         public static string MemberCode;
         public static string PriceFormula;
         public static string ProviderPrefix;
+        public static string DataOutputFolder;
         public static CurrencyRates Rates;
+        public static Encoding DataSourceEncoding = Encoding.UTF8;
 
         public static void ReadConfig(string Member, string Provider, string TargetCode)
         {
@@ -39,6 +41,10 @@ namespace IntegratorTarget
                 PriceFormula = ConfigKeyValues["priceformula"];
             if (ConfigKeyValues.ContainsKey("providerprefix"))
                 ProviderPrefix = ConfigKeyValues["providerprefix"];
+            if (ConfigKeyValues.ContainsKey("dataoutputfolder"))
+                DataOutputFolder = ConfigKeyValues["dataoutputfolder"];
+            if (ConfigKeyValues.ContainsKey("datasourceencoding"))
+                DataSourceEncoding = Encoding.GetEncoding(ConfigKeyValues["datasourceencoding"]);
 
             Config.Rates = Util.ParseOpenExchangeRateCurrencies(CurrencyRatesJsonFilePath);
         }
@@ -105,6 +111,7 @@ namespace IntegratorTarget
         public string ImageURL09;
         public string ImageURL10;
 
+        //public bool IsActive = true;
         public List<SubProduct> SubProducts = new List<SubProduct>();
     }
 

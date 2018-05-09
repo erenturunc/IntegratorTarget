@@ -127,15 +127,19 @@ namespace IntegratorTarget
 
         internal static void WriteOutputFile(string member, string provider, string target, string fileFormat, string content)
         {
-            string folder = string.Format("Output/{0}/{1}/{2}", member, provider, target);
+            string folder = string.Format("{0}/{1}/{2}/{3}", Config.DataOutputFolder, member, provider, target);
             string fileName = string.Format("{0}/{1}_{2}_{3}_{4}{5}", folder, member, provider, target, DateTime.Now.ToString("yyyyMMddHHmmss"), fileFormat);
+            string latestFileName = string.Format("{0}/{1}_{2}_{3}_latest{5}", folder, member, provider, target, DateTime.Now.ToString("yyyyMMddHHmmss"), fileFormat);
 
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            StreamWriter writer = new StreamWriter(fileName, false, Encoding.GetEncoding("iso-8859-9"));
+            StreamWriter writer = new StreamWriter(fileName, false, Config.DataSourceEncoding);
+            StreamWriter writer_latest = new StreamWriter(latestFileName, false, Config.DataSourceEncoding);
             writer.Write(content);
+            writer_latest.Write(content);
             writer.Close();
+            writer_latest.Close();
         }
 
 

@@ -17,7 +17,9 @@ namespace IntegratorTarget.DataMapping
                 if (string.IsNullOrWhiteSpace(item.Value.Attribute04))
                     continue;
                 if (mappingAttribute04.ContainsKey(item.Value.Attribute04))
+                {
                     item.Value.Attribute04 = mappingAttribute04[item.Value.Attribute04];
+                }
             }
         }
 
@@ -124,16 +126,22 @@ namespace IntegratorTarget.DataMapping
 
             foreach (var item in sourceProductList)
             {
-                string productPriceFormula = priceFormula.Replace("[sellingprice]", item.Value.SellingPrice.ToString());
-                productPriceFormula = productPriceFormula.Replace("[price]", item.Value.Price.ToString());
+                string sellingPriceFormula = priceFormula.Replace("[sellingprice]", item.Value.SellingPrice.ToString());
+                string productPriceFormula = priceFormula.Replace("[sellingprice]", item.Value.Price.ToString());
 
-                var result = double.Parse(new DataTable().Compute(productPriceFormula, null).ToString());
-                result = Math.Round(result);
-                if (result.ToString().Length > 2)
-                    result = Math.Round(result / (double)10) * 10;
+                var productResult = double.Parse(new DataTable().Compute(productPriceFormula, null).ToString());
+                var sellingResult = double.Parse(new DataTable().Compute(sellingPriceFormula, null).ToString());
+                productResult = Math.Round(productResult);
+                if (productResult.ToString().Length > 2)
+                    productResult = Math.Round(productResult / (double)10) * 10;
+                sellingResult = Math.Round(sellingResult);
+                if (sellingResult.ToString().Length > 2)
+                    sellingResult = Math.Round(sellingResult / (double)10) * 10;
 
-                item.Value.Price = result;
-                item.Value.SellingPrice = result;
+                item.Value.Price = productResult;
+                item.Value.SellingPrice = sellingResult;
+                //if (item.Value.Category == "Clothing, Shoes & Jewelry > Men > Clothing > Shirts")
+                //    item.Value.Price = sellingResult * 2;
             }
         }
     }
