@@ -134,8 +134,8 @@ namespace IntegratorTarget
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            StreamWriter writer = new StreamWriter(fileName, false, Config.DataSourceEncoding);
-            StreamWriter writer_latest = new StreamWriter(latestFileName, false, Config.DataSourceEncoding);
+            StreamWriter writer = new StreamWriter(fileName, false, Encoding.UTF8);
+            StreamWriter writer_latest = new StreamWriter(latestFileName, false, Encoding.UTF8);
             writer.Write(content);
             writer_latest.Write(content);
             writer.Close();

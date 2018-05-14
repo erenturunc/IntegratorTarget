@@ -26,9 +26,19 @@ namespace IntegratorTarget
             LogHelper.LogWriter.Info("Targeting has been started : {0} {1}", Member, Provider, Target);
             Config.ReadConfig(Member, Provider, Target);
 
+            #region Product List Preparation
             Dictionary<long, Product> SourceProductList = ProductDataProvider.GetProducts(Config.MemberID, Config.ProviderID);
+            //Add Provider Prefix to SKUs
+            foreach (var item in SourceProductList)
+            {
+                item.Value.SKU = Config.ProviderPrefix + item.Value.SKU;
+                if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
+                    item.Value.ProductGroupSKU = Config.ProviderPrefix + item.Value.ProductGroupSKU;
+            }
             Dictionary<string, string> ParentSKUs = SourceProductList.Where(p => !string.IsNullOrWhiteSpace(p.Value.ProductGroupSKU)).Select(p => p.Value.ProductGroupSKU).Distinct().ToDictionary(a => a, b => b);
             Dictionary<string, Product> ParentProductList = SourceProductList.Where(p => ParentSKUs.ContainsKey(p.Value.SKU)).GroupBy(p => p.Value.SKU).ToDictionary(a => a.Key, b => b.First().Value);
+            #endregion
+
             Dictionary<MappingType, Dictionary<string, string>> MappingTarget = AppDataProvider.Get_Mapping(Config.MemberID, Config.ProviderID, Config.TargetID);
             
             if (MappingTarget.ContainsKey(MappingType.Attribute02))
@@ -43,14 +53,6 @@ namespace IntegratorTarget
                 AttributeMapping.MapCategory(SourceProductList, MappingTarget[MappingType.Category]);
 
             AttributeMapping.MapPrice(SourceProductList, Config.PriceFormula);
-
-            //Add Provider Prefix to SKUs
-            foreach (var item in SourceProductList)
-            {
-                item.Value.SKU = Config.ProviderPrefix + item.Value.SKU;
-                if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
-                    item.Value.ProductGroupSKU = Config.ProviderPrefix + item.Value.ProductGroupSKU;
-            }
 
 
             if (Target == "souq")
@@ -69,11 +71,10 @@ namespace IntegratorTarget
             }
             else if (Target == "bamilo")
             {
-                var p = SourceProductList[20992];
                 SourceProductList = Bamilo.Validation(SourceProductList);
                 
                 string Output = Bamilo.Output(SourceProductList, ParentProductList);
-                Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
+                Util.WriteOutputFile(Member, Provider, Target, ".csv", Output);
             }
 
         }
