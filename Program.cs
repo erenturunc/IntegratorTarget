@@ -40,13 +40,17 @@ namespace IntegratorTarget
             #endregion
 
             Dictionary<MappingType, Dictionary<string, string>> MappingTarget = AppDataProvider.Get_Mapping(Config.MemberID, Config.ProviderID, Config.TargetID);
-            
+
+            if (MappingTarget.ContainsKey(MappingType.Attribute01))
+                AttributeMapping.MapAttribute01(SourceProductList, MappingTarget[MappingType.Attribute01]);
             if (MappingTarget.ContainsKey(MappingType.Attribute02))
                 AttributeMapping.MapAttribute02(SourceProductList, MappingTarget[MappingType.Attribute02]);
             if (MappingTarget.ContainsKey(MappingType.Attribute04))
                 AttributeMapping.MapAttribute04(SourceProductList, MappingTarget[MappingType.Attribute04]);
             if (MappingTarget.ContainsKey(MappingType.Attribute06))
                 AttributeMapping.MapAttribute06(SourceProductList, MappingTarget[MappingType.Attribute06]);
+            if (MappingTarget.ContainsKey(MappingType.Attribute12))
+                AttributeMapping.MapAttribute12(SourceProductList, MappingTarget[MappingType.Attribute12]);
             if (MappingTarget.ContainsKey(MappingType.ProductName))
                 AttributeMapping.MapProductName(SourceProductList, MappingTarget[MappingType.ProductName]);
             if (MappingTarget.ContainsKey(MappingType.Category))
@@ -74,7 +78,7 @@ namespace IntegratorTarget
                 SourceProductList = Bamilo.Validation(SourceProductList);
                 
                 string Output = Bamilo.Output(SourceProductList, ParentProductList);
-                Util.WriteOutputFile(Member, Provider, Target, ".csv", Output);
+                Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
             }
 
         }

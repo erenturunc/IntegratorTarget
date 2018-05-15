@@ -28,7 +28,7 @@ namespace IntegratorTarget
         {
             var request = (HttpWebRequest)WebRequest.Create(Url);
 
-            var data = Encoding.ASCII.GetBytes(Body);
+            var data = Encoding.UTF8.GetBytes(Body);
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";

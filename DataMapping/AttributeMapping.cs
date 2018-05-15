@@ -34,6 +34,67 @@ namespace IntegratorTarget.DataMapping
             }
         }
 
+
+        internal static void MapAttribute01(Dictionary<long, Product> sourceProductList, Dictionary<string, string> mappingAttribute01)
+        {
+            string SearchType = "Direct";
+            if (mappingAttribute01.Keys.Where(a => a.Contains("*")).Count() > 0)
+                SearchType = "Wildcard";
+
+            foreach (var item in sourceProductList)
+            {
+                if (SearchType == "Wildcard")
+                {
+                    foreach (var map in mappingAttribute01)
+                    {
+                        string regexPattern = "^" + Regex.Escape(map.Key).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+                        if (Regex.IsMatch(map.Key, regexPattern))
+                            item.Value.Attribute01 = map.Value;
+                    }
+
+                }
+                else if (SearchType == "Direct")
+                {
+                    if (string.IsNullOrWhiteSpace(item.Value.Attribute01))
+                        continue;
+                    if (mappingAttribute01.ContainsKey(item.Value.Attribute01))
+                        item.Value.Attribute01 = mappingAttribute01[item.Value.Attribute01];
+                }
+            }
+
+
+        }
+
+        internal static void MapAttribute12(Dictionary<long, Product> sourceProductList, Dictionary<string, string> mappingAttribute12)
+        {
+            string SearchType = "Direct";
+            if (mappingAttribute12.Keys.Where(a => a.Contains("*")).Count() > 0)
+                SearchType = "Wildcard";
+
+            foreach (var item in sourceProductList)
+            {
+                if (SearchType == "Wildcard")
+                {
+                    foreach (var map in mappingAttribute12)
+                    {
+                        string regexPattern = "^" + Regex.Escape(map.Key).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+                        if (Regex.IsMatch(map.Key, regexPattern))
+                            item.Value.Attribute12 = map.Value;
+                    }
+
+                }
+                else if (SearchType == "Direct")
+                {
+                    if (string.IsNullOrWhiteSpace(item.Value.Attribute12))
+                        continue;
+                    if (mappingAttribute12.ContainsKey(item.Value.Attribute12))
+                        item.Value.Attribute12 = mappingAttribute12[item.Value.Attribute12];
+                }
+            }
+
+
+        }
+
         internal static void MapAttribute06(Dictionary<long, Product> sourceProductList, Dictionary<string, string> mappingAttribute06)
         {
             string SearchType = "Direct";
@@ -131,11 +192,17 @@ namespace IntegratorTarget.DataMapping
 
                 var productResult = double.Parse(new DataTable().Compute(productPriceFormula, null).ToString());
                 var sellingResult = double.Parse(new DataTable().Compute(sellingPriceFormula, null).ToString());
+
                 productResult = Math.Round(productResult);
-                if (productResult.ToString().Length > 2)
+                if (productResult.ToString().Length > 5)
+                    productResult = Math.Round(productResult / (double)10000) * 10000;
+                else if (productResult.ToString().Length > 2)
                     productResult = Math.Round(productResult / (double)10) * 10;
+
                 sellingResult = Math.Round(sellingResult);
-                if (sellingResult.ToString().Length > 2)
+                if (sellingResult.ToString().Length > 5)
+                    sellingResult = Math.Round(sellingResult / (double)10000) * 10000;
+                else if (sellingResult.ToString().Length > 2)
                     sellingResult = Math.Round(sellingResult / (double)10) * 10;
 
                 item.Value.Price = productResult;

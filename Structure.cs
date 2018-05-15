@@ -60,9 +60,26 @@ namespace IntegratorTarget
     {
         ProductName,
         Category,
+        Attribute01,
         Attribute02,
+        Attribute03,
         Attribute04,
-        Attribute06
+        Attribute05,
+        Attribute06,
+        Attribute07,
+        Attribute08,
+        Attribute09,
+        Attribute10,
+        Attribute11,
+        Attribute12,
+        Attribute13,
+        Attribute14,
+        Attribute15,
+        Attribute16,
+        Attribute17,
+        Attribute18,
+        Attribute19,
+        Attribute20
     }
 
     [Serializable]
