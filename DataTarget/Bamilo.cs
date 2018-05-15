@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,9 +74,23 @@ namespace IntegratorTarget.DataTarget
         .ToArray();
 
             //foreach (var item in result)
-           // {
+            // {
             //    CreateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
             //}
+
+            StreamReader reader = new StreamReader(@"c:\users\eren.turunc\desktop\rejected.csv");
+
+            string line = string.Empty;
+            Dictionary<string, string> parentSkus = new Dictionary<string, string>();
+            while ((line = reader.ReadLine()) != null)
+            {
+                string[] parameters = line.Split(';');
+                string sku = parameters[12].Replace("\"", "");
+                if (!parentSkus.ContainsKey(sku))
+                    parentSkus.Add(sku, sku);
+            }
+
+            reader.Close();
 
             foreach (var item in result)
             {
