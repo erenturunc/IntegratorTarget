@@ -109,5 +109,58 @@ namespace IntegratorTarget.Sql
 
             return Result;
         }
+
+        public static Dictionary<string, Dictionary<string, string>> Get_Index(int MemberID, int TargetID)
+        {
+            Dictionary<string, Dictionary<string, string>> Result = new Dictionary<string, Dictionary<string, string>>();
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ApplicationServices"].ConnectionString;
+            SqlConnection conn;
+            SqlCommand cmd;
+            SqlDataReader reader;
+            string query = "Global_Get_Index";
+
+            conn = new SqlConnection(ConnectionString);
+            try
+            {
+                if (conn.State == System.Data.ConnectionState.Closed)
+                    conn.Open();
+
+                cmd = new SqlCommand(query, conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Add("MemberID", SqlDbType.VarChar).Value = MemberID;
+                cmd.Parameters.Add("TargetID", SqlDbType.VarChar).Value = TargetID;
+
+                reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string attribute = ((string)reader["Attribute"]);
+                    string key = ((string)reader["Value"]);
+                    Dictionary<string, string> MapDic;
+                    if (!Result.ContainsKey(attribute))
+                    {
+                        MapDic = new Dictionary<string, string>();
+                        Result.Add(attribute, MapDic);
+                    }
+                    else
+                        MapDic = Result[attribute];
+
+
+                    if (!MapDic.ContainsKey(key))
+                        MapDic.Add(key, key);
+                }
+                reader.Close();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return Result;
+        }
     }
 }

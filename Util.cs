@@ -157,5 +157,49 @@ namespace IntegratorTarget
 
             return signatureHashHex;
         }
+
+        public static Dictionary<string, Product>[] SplitDictionary(Dictionary<string, Product> dic, int chunkSize)
+        {
+            Dictionary<string, Product>[] result =
+                                dic
+                                .Select((kvp, n) => new { kvp, k = n % chunkSize })
+                                .GroupBy(x => x.k, x => x.kvp)
+                                .Select(x => x.ToDictionary(y => y.Key, y => y.Value))
+                                .ToArray();
+            return result;
+        }
+
+        public static Dictionary<long, Product> FilterProductsByIndexes(Dictionary<string, Dictionary<string, string>> Indexes, Dictionary<long, Product> sourceProductList, bool ExcludeParentProducts)
+        {
+            Dictionary<long, Product> Result = new Dictionary<long, Product>();
+
+
+            foreach (var item in sourceProductList)
+            {
+                bool Valid = true;
+                Product p = new Product();
+                foreach (var attr in p.GetType().GetFields())
+                {
+                    if (Indexes.ContainsKey(attr.Name))
+                    {
+                        if (ExcludeParentProducts && string.IsNullOrEmpty(item.Value.ProductGroupSKU))
+                            break;
+                        else
+                        {
+                            var AttrVal = item.Value.GetType().GetField(attr.Name).GetValue(item.Value);
+                            if (AttrVal == null || !Indexes[attr.Name].ContainsKey(AttrVal.ToString()))
+                            { Valid = false; break; }
+                        }
+                    }
+                }
+
+                if (Valid)
+                    Result.Add(item.Key, item.Value);
+            }
+
+            
+
+            return Result;
+        }
     }
 }

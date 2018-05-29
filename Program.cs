@@ -77,7 +77,7 @@ namespace IntegratorTarget
             {
                 SourceProductList = Bamilo.Validation(SourceProductList);
                 
-                string Output = Bamilo.Output(SourceProductList, ParentProductList);
+                string Output = Bamilo.Output(SourceProductList);
                 Util.WriteOutputFile(Member, Provider, Target, ".xml", Output);
             }
 
