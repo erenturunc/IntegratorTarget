@@ -49,65 +49,117 @@ namespace IntegratorTarget.DataTarget
             sourceProductList = Util.FilterProductsByIndexes(Indexes, sourceProductList, true);
             //IndexValidation - END
 
-            Dictionary<string, string> ParentSKUs = sourceProductList.Where(p => !string.IsNullOrWhiteSpace(p.Value.ProductGroupSKU)).Select(p => p.Value.ProductGroupSKU).Distinct().ToDictionary(a => a, b => b);
-            Dictionary<string, Product> parentProductList = sourceProductList.Where(p => ParentSKUs.ContainsKey(p.Value.SKU)).GroupBy(p => p.Value.SKU).ToDictionary(a => a.Key, b => b.First().Value);
-            sourceProductList = sourceProductList.Where(a => string.IsNullOrEmpty(a.Value.ProductGroupSKU) || parentProductList.ContainsKey(a.Value.ProductGroupSKU)).ToDictionary(a => a.Key, b => b.Value);
+            //Dictionary<string, string> ParentSKUs = sourceProductList.Where(p => !string.IsNullOrWhiteSpace(p.Value.ProductGroupSKU)).Select(p => p.Value.ProductGroupSKU).Distinct().ToDictionary(a => a, b => b);
+            //Dictionary<string, Product> parentProductList = sourceProductList.Where(p => ParentSKUs.ContainsKey(p.Value.SKU)).GroupBy(p => p.Value.SKU).ToDictionary(a => a.Key, b => b.First().Value);
+            //sourceProductList = sourceProductList.Where(a => string.IsNullOrEmpty(a.Value.ProductGroupSKU) || parentProductList.ContainsKey(a.Value.ProductGroupSKU)).ToDictionary(a => a.Key, b => b.Value);
 
-            foreach (var item in sourceProductList)
-            {
-                if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
-                    parentProductList[item.Value.ProductGroupSKU].SubProducts.Add(new SubProduct(item.Value));
-            }
-            parentProductList = parentProductList.Where(x => x.Value.SubProducts.Count > 0).ToDictionary(a => a.Key, b => b.Value);
+            //foreach (var item in sourceProductList)
+            //{
+            //    if (!string.IsNullOrWhiteSpace(item.Value.ProductGroupSKU))
+            //        parentProductList[item.Value.ProductGroupSKU].SubProducts.Add(new SubProduct(item.Value));
+            //}
+            //parentProductList = parentProductList.Where(x => x.Value.SubProducts.Count > 0).ToDictionary(a => a.Key, b => b.Value);
 
             //Creating bamilo specific product names
-            foreach (var item in parentProductList)
+            //foreach (var item in parentProductList)
+            //{
+            //    item.Value.ProductName = item.Value.Attribute06 + " " + item.Value.Attribute11 + " " + item.Value.Brand + " " + item.Value.Attribute11;
+            //    foreach (var sProduct in item.Value.SubProducts)
+            //        sProduct.ProductName = item.Value.Attribute06 + " " + item.Value.Attribute11 + " " + item.Value.Brand + " " + item.Value.Attribute11;
+            //}
+
+            //foreach (var item in parentProductList)
+            //{
+            //    int category;
+            //    bool IsInt = int.TryParse(item.Value.Category, out category);
+            //    if (!IsInt)
+            //        item.Value.Category = string.Empty;
+            //}
+            //parentProductList = parentProductList.Where(a => !string.IsNullOrEmpty(a.Value.Category)).ToDictionary(a => a.Key, b => b.Value);
+
+            var MainProducts = sourceProductList.Where(p => string.IsNullOrEmpty(p.Value.ProductGroupSKU)).ToDictionary(a => a.Value.SKU, b => b.Value);
+            var VariantProducts = sourceProductList.Where(p => !string.IsNullOrEmpty(p.Value.ProductGroupSKU)).ToDictionary(a => a.Value.SKU, b => b.Value);
+
+            foreach (var item in VariantProducts)
             {
-                item.Value.ProductName = item.Value.Attribute06 + " " + item.Value.Attribute11 + " " + item.Value.Brand + " " + item.Value.Attribute11;
-                foreach (var sProduct in item.Value.SubProducts)
-                    sProduct.ProductName = item.Value.Attribute06 + " " + item.Value.Attribute11 + " " + item.Value.Brand + " " + item.Value.Attribute11;
+                if (MainProducts.ContainsKey(item.Value.ProductGroupSKU))
+                {
+                    var ParentProduct = MainProducts[item.Value.ProductGroupSKU];
+                    item.Value.Category = ParentProduct.Category;
+                    item.Value.Attribute13 = ParentProduct.Attribute13;
+                    item.Value.ProductName = ParentProduct.Attribute06 + " " + ParentProduct.Attribute11 + " " + ParentProduct.Brand + " " + ParentProduct.Attribute11;
+                    ParentProduct.ProductName = item.Value.ProductName;
+                    ParentProduct.Attribute02 = "---";
+                }
             }
 
-            foreach (var item in parentProductList)
-            {
-                int category;
-                bool IsInt = int.TryParse(item.Value.Category, out category);
-                if (!IsInt)
-                    item.Value.Category = string.Empty;
-            }
-            parentProductList = parentProductList.Where(a => !string.IsNullOrEmpty(a.Value.Category)).ToDictionary(a => a.Key, b => b.Value);
+            //Category Filter
+            int dummy;
+            MainProducts = MainProducts.Where(p => int.TryParse(p.Value.Category, out dummy)).ToDictionary(a => a.Key, b => b.Value);
+            VariantProducts = VariantProducts.Where(p => int.TryParse(p.Value.Category, out dummy)).ToDictionary(a => a.Key, b => b.Value);
+
+            Dictionary<string, string> MainProductSKUs = VariantProducts.Select(p => p.Value.ProductGroupSKU).Distinct().ToDictionary(a => a, b => b);
+            MainProducts = MainProducts.Where(p => MainProductSKUs.ContainsKey(p.Value.SKU)).ToDictionary(a => a.Key, b => b.Value);
+            VariantProducts = VariantProducts.Where(p => MainProducts.ContainsKey(p.Value.ProductGroupSKU)).ToDictionary(a => a.Key, b => b.Value);
+
 
             Dictionary<string, Product> BamiloProducts = GetProducts(Config.TargetApiKey, Config.TargetApiUsername);
             BamiloProducts = BamiloProducts.Where(x => x.Key.StartsWith(Config.ProviderPrefix)).ToDictionary(a => a.Key, b => b.Value);
 
 
-            var DeleteProductList = BamiloProducts.Where(a => !(sourceProductList.Where(b => b.Value.SKU == a.Key).Any())).ToDictionary(a => a.Key, b => b.Value);
-            var CreateProductList = parentProductList.Where(a => !BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
-            var UpdateProductList = parentProductList.Where(a => BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
+            var DeleteProductList = BamiloProducts.Where(a => !MainProducts.ContainsKey(a.Key) && !VariantProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
+            var CreateProductList_Parent = MainProducts.Where(a => !BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
+            var CreateProductList_Variant = VariantProducts.Where(a => !BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
+            var UpdateProductList_Parent = MainProducts.Where(a => BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
+            var UpdateProductList_Variant = VariantProducts.Where(a => BamiloProducts.ContainsKey(a.Key)).ToDictionary(a => a.Key, b => b.Value);
 
             if (DeleteProductList.Count > 0)
-                RemoveProduct(DeleteProductList, Config.TargetApiKey, Config.TargetApiUsername);
-
-            if (UpdateProductList.Count > 0)
             {
-                var result = Util.SplitDictionary(UpdateProductList, 3);
+                RemoveProduct(DeleteProductList, Config.TargetApiKey, Config.TargetApiUsername);
+                System.Threading.Thread.Sleep(1 * 60 * 1000);
+            }
+
+            if (UpdateProductList_Parent.Count > 0)
+            {
+                var result = Util.SplitDictionary(UpdateProductList_Parent, 3);
                 foreach (var item in result)
                 {
                     UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
-                    System.Threading.Thread.Sleep(5 * 60 * 1000); // sleep 10 mins
+                    System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
                 }
             }
 
-            if (CreateProductList.Count > 0)
+            if (UpdateProductList_Variant.Count > 0)
             {
-                var result = Util.SplitDictionary(CreateProductList, 5);
+                var result = Util.SplitDictionary(UpdateProductList_Variant, 3);
+                foreach (var item in result)
+                {
+                    UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
+                    System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
+                }
+            }
+
+
+            if (CreateProductList_Parent.Count > 0)
+            {
+                var result = Util.SplitDictionary(CreateProductList_Parent, 3);
                 foreach (var item in result)
                 {
                     CreateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
-                    System.Threading.Thread.Sleep(5 * 60 * 1000); // sleep 30 mins
+                    System.Threading.Thread.Sleep(2 * 60 * 1000); // sleep 30 mins
                     CreateImages(item, Config.TargetApiKey, Config.TargetApiUsername);
                 }
-                
+            }
+
+            if (CreateProductList_Variant.Count > 0)
+            {
+                var result = Util.SplitDictionary(CreateProductList_Variant, 5);
+                foreach (var item in result)
+                {
+                    CreateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
+                    System.Threading.Thread.Sleep(2 * 60 * 1000); // sleep 30 mins
+                    CreateImages(item, Config.TargetApiKey, Config.TargetApiUsername);
+                }
             }
 
             return string.Empty;
@@ -181,7 +233,7 @@ namespace IntegratorTarget.DataTarget
 
             string Signature = Util.GetHashSha256(Parameters, ApiKey);
             string RequestURL = Api_RequestUrl + Parameters + "&Signature=" + Signature;
-            string RequestBody = Products2XML(products);
+            string RequestBody = Products2XML_Update(products);
 
             if (!string.IsNullOrEmpty(RequestBody))
                 UpdateProductResponse = Util.SendHttpPostRequest(RequestURL, RequestBody);
@@ -239,95 +291,57 @@ namespace IntegratorTarget.DataTarget
 
             foreach (var item in products)
             {
-                var ParentProduct = item.Value;
+                var product = item.Value;
+
 
                 sb.Append("<Product>\n");
-                sb.Append("\t<Brand>" + ParentProduct.Brand + "</Brand>\n");
-                sb.Append("\t<Description>" + ParentProduct.ProductName + "</Description>\n");
-                sb.Append("\t<Name>" + ParentProduct.ProductName + "</Name>\n");
-                sb.Append("\t<Price>" + ParentProduct.SellingPrice + "</Price>\n");
-                sb.Append("\t<PrimaryCategory>" + ParentProduct.Category + "</PrimaryCategory>\n");
-                sb.Append("\t<SellerSku>" + ParentProduct.SKU + "</SellerSku>\n");
+                if (!string.IsNullOrEmpty(product.ProductGroupSKU))
+                    sb.Append("\t<ParentSku>" + product.ProductGroupSKU + "</ParentSku>\n");
+                sb.Append("\t<Brand>" + product.Brand + "</Brand>\n");
+                sb.Append("\t<Description>" + product.ProductName + "</Description>\n");
+                sb.Append("\t<Name>" + product.ProductName + "</Name>\n");
+                sb.Append("\t<Price>" + product.SellingPrice + "</Price>\n");
+                sb.Append("\t<PrimaryCategory>" + product.Category + "</PrimaryCategory>\n");
+                sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
                 sb.Append("\t<TaxClass>default</TaxClass>\n");
-                sb.Append("\t<Variation>" + "---" + "</Variation>\n");
-                sb.Append("\t<Quantity>" + ParentProduct.Quantity + "</Quantity>\n");
+                sb.Append("\t<Variation>" + product.Attribute02 + "</Variation>\n");
+                sb.Append("\t<Quantity>" + product.Quantity + "</Quantity>\n");
                 //sb.Append("\t<Available>" + product.Quantity + "</Available>\n");
                 sb.Append("\t<Status>" + "active" + "</Status>\n");
-                sb.Append("\t<ProductId>" + ParentProduct.ProductID + "</ProductId>\n");
+                sb.Append("\t<ProductId>" + product.ProductID + "</ProductId>\n");
 
-                sb.Append("\t<MainImage>" + ParentProduct.ImageURL01 + "</MainImage>\n");
+                sb.Append("\t<MainImage>" + product.ImageURL01 + "</MainImage>\n");
                 sb.Append("\t<Images>\n");
 
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL01))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL01 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL02))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL02 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL03))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL03 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL04))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL04 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL05))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL05 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL01))
+                    sb.Append("\t\t<Image>" + product.ImageURL01 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL02))
+                    sb.Append("\t\t<Image>" + product.ImageURL02 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL03))
+                    sb.Append("\t\t<Image>" + product.ImageURL03 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL04))
+                    sb.Append("\t\t<Image>" + product.ImageURL04 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL05))
+                    sb.Append("\t\t<Image>" + product.ImageURL05 + "</Image>\n");
 
                 sb.Append("\t</Images>\n");
 
                 sb.Append("\t<ProductData>\n");
-                sb.Append("\t\t<Color>" + ParentProduct.SubProducts.First().Attribute04 + "</Color>\n");
-                sb.Append("\t\t<ColorFamily>" + ParentProduct.SubProducts.First().Attribute12 + "</ColorFamily>\n");
-                sb.Append("\t\t<MainMaterial>" + ParentProduct.Attribute13 + "</MainMaterial>\n");
-                sb.Append("\t\t<ClothMaterial>" + ParentProduct.Attribute13 + "</ClothMaterial>\n");
+                sb.Append("\t\t<Color>" + product.Attribute04 + "</Color>\n");
+                sb.Append("\t\t<ColorFamily>" + product.Attribute12 + "</ColorFamily>\n");
+                sb.Append("\t\t<MainMaterial>" + product.Attribute13 + "</MainMaterial>\n");
+                sb.Append("\t\t<ClothMaterial>" + product.Attribute13 + "</ClothMaterial>\n");
                 sb.Append("\t\t<ProductWeight>0.5</ProductWeight>\n");
-                sb.Append("\t\t<Gender>" + ParentProduct.Attribute06 + "</Gender>\n");
+                sb.Append("\t\t<Gender>" + product.Attribute06 + "</Gender>\n");
                 sb.Append("\t\t<ProductWarranty><![CDATA[" + ProductWarranty + "]]></ProductWarranty>\n");
                 sb.Append("\t</ProductData>\n");
 
+                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.2) / (double)1000) * 1000 + "</SalePrice>\n");
+                sb.Append("\t<SaleStartDate>" + "2018-01-01 00:00:00" + "</SaleStartDate>\n");
+                sb.Append("\t<SaleEndDate>" + "2018-12-01 00:00:00" + "</SaleEndDate>\n");
+
                 sb.Append("</Product>\n");
 
-                foreach (var product in ParentProduct.SubProducts)
-                {
-                    sb.Append("<Product>\n");
-                    sb.Append("\t<ParentSku>" + product.ProductGroupSKU + "</ParentSku>\n");
-                    sb.Append("\t<Brand>" + product.Brand + "</Brand>\n");
-                    sb.Append("\t<Description>" + product.ProductName + "</Description>\n");
-                    sb.Append("\t<Name>" + product.ProductName + "</Name>\n");
-                    sb.Append("\t<Price>" + product.SellingPrice + "</Price>\n");
-                    sb.Append("\t<PrimaryCategory>" + ParentProduct.Category + "</PrimaryCategory>\n");
-                    sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
-                    sb.Append("\t<TaxClass>default</TaxClass>\n");
-                    sb.Append("\t<Variation>" + product.Attribute02 + "</Variation>\n");
-                    sb.Append("\t<Quantity>" + product.Quantity + "</Quantity>\n");
-                    //sb.Append("\t<Available>" + product.Quantity + "</Available>\n");
-                    sb.Append("\t<Status>" + "active" + "</Status>\n");
-                    sb.Append("\t<ProductId>" + product.ProductID + "</ProductId>\n");
-
-                    sb.Append("\t<MainImage>" + product.ImageURL01 + "</MainImage>\n");
-                    sb.Append("\t<Images>\n");
-
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL01))
-                        sb.Append("\t\t<Image>" + product.ImageURL01 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL02))
-                        sb.Append("\t\t<Image>" + product.ImageURL02 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL03))
-                        sb.Append("\t\t<Image>" + product.ImageURL03 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL04))
-                        sb.Append("\t\t<Image>" + product.ImageURL04 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL05))
-                        sb.Append("\t\t<Image>" + product.ImageURL05 + "</Image>\n");
-
-                    sb.Append("\t</Images>\n");
-
-                    sb.Append("\t<ProductData>\n");
-                    sb.Append("\t\t<Color>" + product.Attribute04 + "</Color>\n");
-                    sb.Append("\t\t<ColorFamily>" + product.Attribute12 + "</ColorFamily>\n");
-                    sb.Append("\t\t<MainMaterial>" + ParentProduct.Attribute13 + "</MainMaterial>\n");
-                    sb.Append("\t\t<ClothMaterial>" + ParentProduct.Attribute13 + "</ClothMaterial>\n");
-                    sb.Append("\t\t<ProductWeight>0.5</ProductWeight>\n");
-                    sb.Append("\t\t<Gender>" + product.Attribute06 + "</Gender>\n");
-                    sb.Append("\t\t<ProductWarranty><![CDATA[" + ProductWarranty + "]]></ProductWarranty>\n");
-                    sb.Append("\t</ProductData>\n");
-
-                    sb.Append("</Product>\n");
-                }
 
             }
 
@@ -357,6 +371,31 @@ namespace IntegratorTarget.DataTarget
             return sb.ToString();
         }
 
+        private static string Products2XML_Update(Dictionary<string, Product> products)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+            sb.Append("<Request>\n");
+
+            foreach (var item in products)
+            {
+                var product = item.Value;
+
+                sb.Append("<Product>\n");
+                sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
+                sb.Append("\t<Quantity>" + product.Quantity + "</Quantity>\n");
+                sb.Append("\t<Price>" + product.SellingPrice + "</Price>\n");
+                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.2) / (double)1000) * 1000 + "</SalePrice>\n");
+                sb.Append("\t<SaleStartDate>" + "2018-01-01 00:00:00" + "</SaleStartDate>\n");
+                sb.Append("\t<SaleEndDate>" + "2018-12-01 00:00:00" + "</SaleEndDate>\n");
+                sb.Append("</Product>\n");
+            }
+
+            sb.Append("</Request>\n");
+
+            return sb.ToString();
+        }
 
         private static string Images2XML(Dictionary<string, Product> products)
         {
@@ -367,49 +406,26 @@ namespace IntegratorTarget.DataTarget
 
             foreach (var item in products)
             {
-                var ParentProduct = item.Value;
+                var product = item.Value;
 
                 sb.Append("<ProductImage>\n");
-                sb.Append("\t<SellerSku>" + ParentProduct.SKU + "</SellerSku>\n");
+                sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
 
                 sb.Append("\t<Images>\n");
 
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL01))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL01 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL02))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL02 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL03))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL03 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL04))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL04 + "</Image>\n");
-                if (!string.IsNullOrWhiteSpace(ParentProduct.ImageURL05))
-                    sb.Append("\t\t<Image>" + ParentProduct.ImageURL05 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL01))
+                    sb.Append("\t\t<Image>" + product.ImageURL01 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL02))
+                    sb.Append("\t\t<Image>" + product.ImageURL02 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL03))
+                    sb.Append("\t\t<Image>" + product.ImageURL03 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL04))
+                    sb.Append("\t\t<Image>" + product.ImageURL04 + "</Image>\n");
+                if (!string.IsNullOrWhiteSpace(product.ImageURL05))
+                    sb.Append("\t\t<Image>" + product.ImageURL05 + "</Image>\n");
 
                 sb.Append("\t</Images>\n");
                 sb.Append("</ProductImage>\n");
-
-                foreach (var product in ParentProduct.SubProducts)
-                {
-                    sb.Append("<ProductImage>\n");
-                    sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
-                    sb.Append("\t<Images>\n");
-
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL01))
-                        sb.Append("\t\t<Image>" + product.ImageURL01 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL02))
-                        sb.Append("\t\t<Image>" + product.ImageURL02 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL03))
-                        sb.Append("\t\t<Image>" + product.ImageURL03 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL04))
-                        sb.Append("\t\t<Image>" + product.ImageURL04 + "</Image>\n");
-                    if (!string.IsNullOrWhiteSpace(product.ImageURL05))
-                        sb.Append("\t\t<Image>" + product.ImageURL05 + "</Image>\n");
-
-                    sb.Append("\t</Images>\n");
-
-                    sb.Append("</ProductImage>\n");
-                }
-
             }
 
             sb.Append("</Request>\n");
@@ -677,7 +693,7 @@ namespace IntegratorTarget.DataTarget
                 width = img.Width;
                 height = img.Height;
             }
-            
+
         }
 
     }

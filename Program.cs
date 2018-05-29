@@ -26,6 +26,8 @@ namespace IntegratorTarget
             LogHelper.LogWriter.Info("Targeting has been started : {0} {1}", Member, Provider, Target);
             Config.ReadConfig(Member, Provider, Target);
 
+            AppDataProvider.Apply_Custom_Changes();
+
             #region Product List Preparation
             Dictionary<long, Product> SourceProductList = ProductDataProvider.GetProducts(Config.MemberID, Config.ProviderID);
             //Add Provider Prefix to SKUs

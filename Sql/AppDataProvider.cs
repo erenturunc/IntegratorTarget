@@ -162,5 +162,37 @@ namespace IntegratorTarget.Sql
 
             return Result;
         }
+
+        public static Dictionary<string, Dictionary<string, string>> Apply_Custom_Changes()
+        {
+            Dictionary<string, Dictionary<string, string>> Result = new Dictionary<string, Dictionary<string, string>>();
+            string ConnectionString = ConfigurationManager.ConnectionStrings["ApplicationServices"].ConnectionString;
+            SqlConnection conn;
+            SqlCommand cmd;
+            string query = "Target_Custom_Changes";
+
+            conn = new SqlConnection(ConnectionString);
+            try
+            {
+                if (conn.State == System.Data.ConnectionState.Closed)
+                    conn.Open();
+
+                cmd = new SqlCommand(query, conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.ExecuteNonQuery();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return Result;
+        }
     }
 }
