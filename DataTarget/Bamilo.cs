@@ -336,7 +336,7 @@ namespace IntegratorTarget.DataTarget
                 sb.Append("\t\t<ProductWarranty><![CDATA[" + ProductWarranty + "]]></ProductWarranty>\n");
                 sb.Append("\t</ProductData>\n");
 
-                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.2) / (double)1000) * 1000 + "</SalePrice>\n");
+                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.42857) / (double)1000) * 1000 + "</SalePrice>\n");
                 sb.Append("\t<SaleStartDate>" + "2018-01-01 00:00:00" + "</SaleStartDate>\n");
                 sb.Append("\t<SaleEndDate>" + "2018-12-01 00:00:00" + "</SaleEndDate>\n");
 
@@ -386,7 +386,7 @@ namespace IntegratorTarget.DataTarget
                 sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
                 sb.Append("\t<Quantity>" + product.Quantity + "</Quantity>\n");
                 sb.Append("\t<Price>" + product.SellingPrice + "</Price>\n");
-                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.2) / (double)1000) * 1000 + "</SalePrice>\n");
+                sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.42857) / (double)1000) * 1000 + "</SalePrice>\n");
                 sb.Append("\t<SaleStartDate>" + "2018-01-01 00:00:00" + "</SaleStartDate>\n");
                 sb.Append("\t<SaleEndDate>" + "2018-12-01 00:00:00" + "</SaleEndDate>\n");
                 sb.Append("</Product>\n");
