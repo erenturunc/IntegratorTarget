@@ -119,25 +119,26 @@ namespace IntegratorTarget.DataTarget
                 System.Threading.Thread.Sleep(1 * 60 * 1000);
             }
 
-            if (UpdateProductList_Parent.Count > 0)
-            {
-                var result = Util.SplitDictionary(UpdateProductList_Parent, 3);
-                foreach (var item in result)
-                {
-                    UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
-                    System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
-                }
-            }
+            //if (UpdateProductList_Parent.Count > 0)
+            //{
+            //    var result = Util.SplitDictionary(UpdateProductList_Parent, 3);
+            //    foreach (var item in result)
+            //    {
+            //        UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
+            //        System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
+            //    }
+            //}
 
-            if (UpdateProductList_Variant.Count > 0)
-            {
-                var result = Util.SplitDictionary(UpdateProductList_Variant, 3);
-                foreach (var item in result)
-                {
-                    UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
-                    System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
-                }
-            }
+
+            //if (UpdateProductList_Variant.Count > 0)
+            //{
+            //    var result = Util.SplitDictionary(UpdateProductList_Variant, 3);
+            //    foreach (var item in result)
+            //    {
+            //        UpdateProduct(item, Config.TargetApiKey, Config.TargetApiUsername);
+            //        System.Threading.Thread.Sleep(1 * 60 * 1000); // sleep 10 mins
+            //    }
+            //}
 
 
             if (CreateProductList_Parent.Count > 0)
