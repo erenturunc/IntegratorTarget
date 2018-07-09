@@ -115,6 +115,9 @@ namespace IntegratorTarget.DataTarget
 
             if (DeleteProductList.Count > 0)
             {
+                UpdateProductStockToZero(DeleteProductList, Config.TargetApiKey, Config.TargetApiUsername);
+                System.Threading.Thread.Sleep(10 * 60 * 1000); // sleep 10 mins
+
                 RemoveProduct(DeleteProductList, Config.TargetApiKey, Config.TargetApiUsername);
                 System.Threading.Thread.Sleep(1 * 60 * 1000);
             }
@@ -235,6 +238,26 @@ namespace IntegratorTarget.DataTarget
             string Signature = Util.GetHashSha256(Parameters, ApiKey);
             string RequestURL = Api_RequestUrl + Parameters + "&Signature=" + Signature;
             string RequestBody = Products2XML_Update(products);
+
+            if (!string.IsNullOrEmpty(RequestBody))
+                UpdateProductResponse = Util.SendHttpPostRequest(RequestURL, RequestBody);
+
+        }
+
+        public static void UpdateProductStockToZero(Dictionary<string, Product> products, string ApiKey, string ApiUsername)
+        {
+            string UpdateProductResponse;
+            //Action=ProductUpdate&Format=XML&Timestamp=##Timestamp##&UserID=atif.unaldi%40texmart.com&Version=1.0
+            string Action = HttpUtility.UrlEncode("ProductUpdate");
+            string Format = HttpUtility.UrlEncode("XML");
+            string TimeStamp = HttpUtility.UrlEncode(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss") + "+00:00").ToUpperInvariant();
+            string UserID = HttpUtility.UrlEncode(ApiUsername);
+            string Version = HttpUtility.UrlEncode("1.0");
+            string Parameters = string.Format("Action={0}&Format={1}&Timestamp={2}&UserID={3}&Version={4}", Action, Format, TimeStamp, UserID, Version);
+
+            string Signature = Util.GetHashSha256(Parameters, ApiKey);
+            string RequestURL = Api_RequestUrl + Parameters + "&Signature=" + Signature;
+            string RequestBody = Products2XML_UpdateStockToZero(products);
 
             if (!string.IsNullOrEmpty(RequestBody))
                 UpdateProductResponse = Util.SendHttpPostRequest(RequestURL, RequestBody);
@@ -390,6 +413,28 @@ namespace IntegratorTarget.DataTarget
                 sb.Append("\t<SalePrice>" + Math.Round((product.SellingPrice / 1.42857) / (double)1000) * 1000 + "</SalePrice>\n");
                 sb.Append("\t<SaleStartDate>" + "2018-01-01 00:00:00" + "</SaleStartDate>\n");
                 sb.Append("\t<SaleEndDate>" + "2018-12-01 00:00:00" + "</SaleEndDate>\n");
+                sb.Append("</Product>\n");
+            }
+
+            sb.Append("</Request>\n");
+
+            return sb.ToString();
+        }
+
+        private static string Products2XML_UpdateStockToZero(Dictionary<string, Product> products)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+            sb.Append("<Request>\n");
+
+            foreach (var item in products)
+            {
+                var product = item.Value;
+
+                sb.Append("<Product>\n");
+                sb.Append("\t<SellerSku>" + product.SKU + "</SellerSku>\n");
+                sb.Append("\t<Quantity>0</Quantity>\n");
                 sb.Append("</Product>\n");
             }
 
